@@ -109,7 +109,7 @@ reference="data"} section goes into detail about the
 Manifesto Project Corpus. The [Methodology](#methodology){reference-type="ref"
 reference="methodology"} section then introduces our classification approach and provides important details of our models and evaluation approach. In tbe [Results](#results){reference-type="ref" reference="results"} section, we
 present our results and address some limitations of our system. Finally,
-our [Conclusion](#conclusion){reference-type="ref" reference="conclusion"} summarizes our findings and sets up a roadmap for future improvements.
+the [Conclusion](#conclusion){reference-type="ref" reference="conclusion"} summarizes our findings and sets up a roadmap for future improvements.
 
 ## Related Work {#related_work}
 

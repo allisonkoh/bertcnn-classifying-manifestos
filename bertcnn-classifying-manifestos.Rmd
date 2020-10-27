@@ -1,5 +1,5 @@
 ---
-title: "Predicting Policy Preferences with BERT and Convolutional Neural Networks"
+title: "Predicting Policy Domains and Preferences with BERT and Convolutional Neural Networks"
 description: |
   We present a deep learning approach to classifying labeled texts and phrases in party manifestos, using the coding scheme and documents from the Manifesto Project Corpus.
 author:
@@ -19,7 +19,13 @@ preview: figures/BERTfig3.png
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 # Load dependencies 
+library(tidyverse) # for all the fun tidy data things
+library(viridis) # pretty colors
+library(tibble) # for row-wise tibble creation
 library(reticulate) # For rendering Python code 
+
+# ggplot defaults 
+ggplot2::theme_set(theme_minimal())
 ```
 
  {#abstract}
@@ -45,7 +51,7 @@ library(reticulate) # For rendering Python code
   classifying statements from English language party manifestos by major
   policy domain.
 
-## Introduction {#intro}
+## Background {#background}
 
 During campaigns, political actors communicate their position on a range
 of key issues to signal campaign promises and gain favor with
@@ -55,11 +61,11 @@ policy preferences, it remains essential to understanding their intended
 political actions. This is why policy preferences---or positions on
 specific policy issues expressed in speech or text---have been
 extensively analyzed within the relevant political science literature
- [@abercrombie2019policy; @budge2001mapping; @lowe2011scaling; @volkens2013mapping].
+[@abercrombie2019policy; @budge2001mapping; @lowe2011scaling; @volkens2013mapping].
 Methods employed to investigate the policy preferences of political
 actors include analysis of roll call voting, position extraction from
 elite studies or regular surveys, expert surveys and hand-coded analysis
-and computerized text analysis  [@debus2009estimating]. Studies that
+and computerized text analysis [@debus2009estimating]. Studies that
 utilize political manifestos, electoral speeches, and debate motions
 often rely on the availability of machine-readable documents that are
 labeled by policy domain or policy preference.
@@ -68,7 +74,7 @@ Quantitative methods, especially in the field of natural language
 processing, have enabled the development of more scalable methods for
 predicting policy preferences. These advancements have enabled political
 scientists to analyze political texts and estimate their positions over
-time  [@nanni2016topfish; @zirn2016classifying]. To better understand
+time [@nanni2016topfish; @zirn2016classifying]. To better understand
 the political positions of political actors, many social science
 researchers have turned to hand-labeling political documents, such as
 parliamentary debate motions and party manifestos. Much of the previous
@@ -80,9 +86,9 @@ Most recently, neural networks and deep language representation models
 have been employed in state-of-the-art approaches to automatic labeling
 of political texts by policy preference.
 
-In this paper, we present a deep learning approach to classifying
+In this article, we present a deep learning approach to classifying
 labeled texts and phrases in party manifestos, using the coding scheme
-and documents from Manifesto Project  [@volkens2019manifesto]. We use
+and documents from Manifesto Project [@volkens2019manifesto]. We use
 English-language texts from the Manifesto Project Corpus, which divides
 party manifestos into statements---or *quasi-sentences*---that do not
 span more than one grammatical sentence. Based on the state-of-the-art
@@ -100,22 +106,11 @@ best of our knowledge, we offer the most comprehensive application of
 deep language representation models incorporated with neural networks
 for document classification of political manifesto statements.
 
-The rest of this paper is structured as follows. In the
-[Related Work](#related_work){reference-type="ref" reference="related_work"} section, we
-provide a brief overview of the current state-of-the-art in
-classification of political texts, focusing mainly on detecting policy
-domains and preference. The [Data](#data){reference-type="ref"
-reference="data"} section goes into detail about the
-Manifesto Project Corpus. The [Methodology](#methodology){reference-type="ref"
-reference="methodology"} section then introduces our classification approach and provides important details of our models and evaluation approach. In tbe [Results](#results){reference-type="ref" reference="results"} section, we
-present our results and address some limitations of our system. Finally,
-the [Conclusion](#conclusion){reference-type="ref" reference="conclusion"} summarizes our findings and sets up a roadmap for future improvements.
-
 ## Related Work {#related_work}
 
 Several studies have concentrated on building scaling models that
 identify the political position of texts
- [@glavavs2017cross; @laver2003extracting; @nanni2019political; @proksch2010position].
+[@glavavs2017cross; @laver2003extracting; @nanni2019political; @proksch2010position].
 Previously, most of the seminal work in this area has overlooked the
 task of classifying texts by topic or policy area prior to detecting
 policy preferences associated with the topic. Over the past couple of
@@ -150,12 +145,11 @@ texts. Their best performing hierarchical modeling approach for
 classifying 86,603 English language quasi-sentences yielded an F1 score
 of .50.
 
-used deep language representation models to detect the policy positions
+Abercrombie et al. (2019) [@abercrombie2019policy] used deep language representation models to detect the policy positions
 of Members of Parliament in the United Kingdom. Using motions and
 manifestos as data sources, the authors employed a variety of methods to
 predict the policy and domain labels of texts. They propose utilizing
-Bidirectional Encoder Representations from Transformers
-(BERT), with results fine-tuned with party manifestos and
+BERT for this task, with results fine-tuned with party manifestos and
 the motions themselves. In addition to a final softmax layer, the
 authors added a CNN model and max-pooling layers to the soft-max layer.
 they found that the use of BERT demonstrated
@@ -167,17 +161,17 @@ models for classifying political texts.
 
 ## The Manifesto Project Corpus {#data}
 
-The Manifesto Project Corpus[^2]  [@volkens2019manifesto] provides
+The Manifesto Project Corpus[^2] provides
 information on policy preferences of political parties from seven
-different countries based on a coding scheme of seven policy domains,
-under which 57 policy preference codes are manually coded. The Manifesto
+different countries based on a coding scheme of 8 policy domains,
+under which 58 policy preference codes are manually coded[^3]. The Manifesto
 Project offers data that divides party manifestos into quasi-sentences,
 or individual statements which do not span more than one grammatical
 sentence. Quasi-sentences are then individually assigned to categories
-pertaining to policy domain and preference. The 57 policy preference
+pertaining to policy domain and preference. The 58 policy preference
 codes, one of which is "not categorized", refer to the
 position---positive or negative---of a party regarding a particular
-policy area. The 57 policy preference codes fall into a macro-level
+policy area. The 58 policy preference codes fall into a macro-level
 coding scheme comprising of 8 policy domain categories. In political
 science research, the Manifesto Project Corpus is particularly useful
 for studying party competition, the responsiveness of political parties
@@ -188,14 +182,75 @@ automatically detecting policy positions of the text data is valuable
 for scaling up the classification of large volumes of political texts
 available for analysis.
 
+<aside> 
+
+Each of domain comprises of minor categories, also known as [policy preferences](https://manifesto-project.wzb.eu/down/data/2020a/codebooks/codebook_MPDataset_MPDS2020a.pdf). For instance, the policy preferences listed under the "External Relations" domain include: 
+
+- Foreign Special Relationships
+- Anti-Imperialism
+- Military
+- Peace
+- Internationalism
+- European Community/Union
+
+</aside>
+
+
 Our final subset of all English-language manifestos comprises of 99,681
-quasi-sentences. Table [\[tbl:desc\]](#tbl:desc){reference-type="ref"
-reference="tbl:desc"} illustrates the distribution of English-language
+quasi-sentences. Figures \@ref(fig:desc-pd) and \@ref(fig:desc-country) illustrate the distribution of English-language
 manifestos across countries and policy domains. To ensure that the ratio
 between policy domains remains consistent across policy domains in
 running our models, we applied a 70/15/15 split between training,
-validation, and test sets separately for the 8 major categories and the
-58 minor categories.
+validation, and test sets separately for all policy domains (major categories) and policy preferences (minor categories). 
+
+```{r desc-pd, eval = TRUE, echo = FALSE, out.width = '50%', fig.cap = "Quasi-sentences (QSs) from English language manifestos by policy domain"}
+# knitr::include_graphics("figures/desc-major.png")
+
+pd_df <- tribble(
+  ~"Domain",                      ~"QSs",
+  "External Relations",            6580, 
+  "Freedom and Democracy",         4700,
+  "Political System",              10557,
+  "Economy",                       24757,
+  "Welfare and Quality of Life",   30750,
+  "Fabric of Society",             11099,
+  "Social Groups",                 9910, 
+  "Not categorized",               1328
+) %>% mutate(Domain = as_factor(Domain))
+  
+ggplot(pd_df, aes(x = fct_rev(Domain), y = QSs, fill = QSs)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = QSs, hjust = -.1)) +
+  labs(x = "", y = "# QSs") +
+  ylim(0, 33000) +
+  scale_fill_viridis(option = "plasma") +
+  coord_flip() +
+  theme(legend.position = "none")
+```
+
+```{r desc-country, eval = TRUE, echo = FALSE, out.width = '50%', fig.cap = "Quasi-sentences (QSs) from English language manifestos by country"}
+# knitr::include_graphics("figures/desc-country.png")
+
+c_df <- tribble(
+  ~"Country",                      ~"QSs",
+  "United States",                  10819, 
+  "South Africa",                   6423,
+  "New Zealand",                    28561,
+  "Ireland",                        25352,
+  "Great Britain",                  14839,
+  "Canada",                         3047,
+  "Australia",                      10370, 
+) %>% mutate(Domain = as_factor(Country))
+
+ggplot(c_df, aes(x = fct_rev(Country), y = QSs, fill = QSs)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = QSs, hjust = -.1)) +
+  labs(x = "", y = "# QSs") +
+  ylim(0, 33000) +
+  scale_fill_viridis(option = "plasma") +
+  coord_flip() +
+  theme(legend.position = "none")
+```
 
 ## Experimental Setup {#methodology}
 
@@ -203,9 +258,9 @@ validation, and test sets separately for the 8 major categories and the
 
 Bidirectional Encoder Representations from Transformers
 (BERT) have proven successful in prior attempts to
-classify phrases and short texts [@devlin2018bert] .
+classify phrases and short texts [@devlin2018bert].
 BERT's key innovation lies in its ability to apply
-bidirectional training of transformers to language modelling. This
+bidirectional training of transformers to language modeling. This
 state-of-the-art deep language representation model uses a "masked
 language model", enabling it to overcome restrictions caused by the
 unidirectional constraint.
@@ -220,40 +275,38 @@ incorporating a bidirectional GRU model, and another incorporating CNNs.
 Model specifications and training times for our neural networks and deep
 language representation models are shown in Table
 [1](#tab:modelspec){reference-type="ref" reference="tab:modelspec"} and
-Figure [1](#fig:tt){reference-type="ref" reference="fig:tt"}.
+Figure \@ref(fig:tt).
 
 ::: {#tab:modelspec}
-  Models                           Text Representation                                                                                                   Epochs
-  ------------------------ ----------------------------------- ---------------------------------------------------------------------------------------- --------
-  CNN                             GloVe Wikipedia w-emb        2 Convolutional Layers (1 per filter)2 Max Pooling Layers1 Dropout Layer1 Linear Layer     100
-  BERT-CNN    Base BERT (uncased)  2 Convolutional Layers (1 per filter)2 Max Pooling Layers1 Dropout Layer1 Linear Layer      10
-  BERT-GRU    Base BERT (uncased)  1 Bidirectional GRU RNN Layer1 Dropout Layer1 Linear Layer                                  10
+| Models   | Text Representation   | Layers                                                                                               | Epochs |
+|----------|-----------------------|------------------------------------------------------------------------------------------------------|--------|
+| CNN      | GloVe Wikipedia w-emb | 2 Convolutional Layers (1 per filter)<br>2 Max Pooling Layers<br>1 Dropout Layer <br>1 Linear Layer  | 100    |
+| BERT-CNN | Base BERT (uncased)   | 2 Convolutional Layers (1 per filter)<br>2 Max Pooling Layers <br>1 Dropout Layer <br>1 Linear Layer | 10     |
+| BERT-GRU | Base BERT (uncased)   | 1 Bidirectional GRU RNN Layer <br>1 Dropout Layer <br>1 Linear Layer                                 | 10     |
 
-  : Model specifications of neural networks and deep language
-  representation models
+Table: Table 1: Model specifications of neural networks and deep language representation models 
+
 :::
 
-\
- \
+```{r tt, out.width = '50%', fig.cap = "Training time for neural networks and deep language representation models for classifying political texts by *major* and *minor* policy domain"}
+knitr::include_graphics("figures/tt.png")
+```
 
-![Training time for neural networks and deep language representation
-models for classifying political texts by *major* and *minor* policy
-domain](figs/tt.png){#fig:tt width=".45\\linewidth"}
 
 ### BERT with Gated Recurrent Units (GRU)
 
-First proposed by Cho et al. , Gated Recurrent Units---formerly referred
+First proposed by Cho et al. (2014) [@cho2014learning], Gated Recurrent Units---formerly referred
 to as the RNN Encoder-Decoder model---use update gates and reset gates
 to solve the vanishing gradient problems often encountered in
-applications of recurrent neural networks  [@kanai2017preventing]. The
+applications of recurrent neural networks [@kanai2017preventing]. The
 update gate helps the model determine the extent to which past
 information is carried on in the model whilst the reset gate determines
-the information to be removed from the model  [@chung2014empirical].
+the information to be removed from the model [@chung2014empirical].
 Hence, it solves the aforementioned problem by not completely removing
 the new input, instead keeping relevant information to pass on to
 further subsequent computed states. In our analysis, we employ a
-multi-layer, bidirectional GRU model from PyTorch[^3]. As shown in Table
-[1](#tab:modelspec){reference-type="ref" reference="tab:modelspec"}. The
+multi-layer, bidirectional GRU model from PyTorch[^3] (Table
+[1](#tab:modelspec){reference-type="ref" reference="tab:modelspec"}). The
 results are subject to a dropout layer prior to classification via a
 linear layer.
 
@@ -271,55 +324,39 @@ preferences ($N = 58$), each of which includes a category for
 quasi-sentences that do not fall into this classification scheme.
 Hereafter, we refer to these classifications as 'major' and 'minor'
 categories, respectively. A graphical representation of our model is
-shown in Figure [2](#fig:BERTCNNfig){reference-type="ref"
-reference="fig:BERTCNNfig"}.
+shown in Figure \@ref(fig:bertcnn-fig).
 
-![Graphical representation of the base BERT-CNN model to predict major
-policy domains.](figs/BERTfig3.png){#fig:BERTCNNfig
-width=".9\\linewidth"}
+```{r bertcnn-fig, out.width = '50%', fig.cap = "Graphical representation of the base BERT-CNN model to predict major policy domains"}
+knitr::include_graphics("figures/BERTfig3.png")
+```
 
 ### Evaluation
 
 We evaluate the performance of our proposed method against several
-baselines , which include:
+baselines:
 
--   **Multinomial Naive Bayes**: This algorithm, commonly used in text
+-   **Multinomial Naive Bayes** [@su2011large]: This algorithm, commonly used in text
     classification, operates on the *Bag of Words assumption* and the
     assumption of *Conditional independence*.
 
--   **Support Vector Machines**  [@tong2001support]: We used this
+-   **Support Vector Machines** [@tong2001support]: We used this
     traditional binary classifier to calculate baselines with the `SVC`
     package from `scikit-learn`[^4], employing a "one-against-one"
     approach for multi-class classification.
 
 -   **Convolutional Neural Networks (CNN)**
-     [@DBLP:journals/corr/Kim14f; @lecun1998gradient]: To run this deep
+    [@DBLP:journals/corr/Kim14f; @lecun1998gradient]: To run this deep
     learning model, originally designed for image classification, we
     first made use of pre-trained word vectors trained by GloVe, an
     unsupervised learning algorithm for obtaining vector representations
-    for words  [@Pennington_Socher_Manning_2014].
+    for words [@Pennington_Socher_Manning_2014].
 
 To evaluate model fit, we utilized *accuracy* and *loss* as key metrics
-to compare performance of our *CNN* and [Bert-GRU]{.smallcaps} baseline
-and our proposed models ([Bert+CNN]{.smallcaps},
-[Bert+GRU]{.smallcaps}). We calculated the *F1-score* for each model
+to compare performance of our *CNN* baseline
+and our proposed models (BERT-CNN,
+BERT-GRU). We calculated the *F1-score* for each model
 that we ran. In our results, we present both the Macro-F1 score and
-Micro-F1 score[^5].
-
-llcccc Category & Model & Test Loss & Test Acc. & Micro-F1 & Macro-F1\
-\[2\]\*Major & MNB & --- & 0.553 & 0.553 & 0.398\
-& SVM & --- & 0.578 & 0.578 & 0.460\
-& CNN & 1.177 & 0.589 & 0.589 & 0.466\
-& BERT-GRU & 1.166 & 0.594 & 0.593 & 0.479\
-& BERT-CNN & **1.152** & **0.591** & **0.591** & **0.473**\
-\[1\]\*Minor & MNB & --- & 0.385 & 0.385 & 0.154\
-& SVM & --- & **0.463** & **0.463** & **0.299**\
-& CNN & 2.136 & 0.454 & 0.454 & 0.273\
-& BERT-GRU & 2.216 & 0.432 & 0.432 & 0.239\
-& BERT-CNN & **2.098** & 0.448 & 0.448 & 0.260\
-
-\
- \
+Micro-F1 score[^6].
 
 ### Architecture fine tuning
 
@@ -336,15 +373,13 @@ models. For the CNN models, we compared the following modifications:
     overfitting.
 
 -   **Additional linear layer**: An additional linear layer was added
-    prior to the final categorzation linear layer to establish whether
+    prior to the final categorization linear layer to establish whether
     "deeper" neural networks generate improved predictions.
 
--   **Removal of uncategorized quasi-sentences**: The results from our
-    base models yield lower Macro-F1 scores due to the difficulty of
-    correctly categorizing quasi-sentences that do not fall into any of
-    the 7 policy domains or 57 policy preference codes. We are thus
-    interested in whether predictions improve if the uncategorized
-    quasi-sentences are taken out of the data used for analysis.
+-   **Removal of uncategorized quasi-sentences**: We removed quasi-sentences 
+    that were labeled as "not categorized" to investigate whether predictions improve 
+    with an altered classification scheme of 7 specified policy domains and 57 
+    policy preference codes[^7]. 
 
 For the BERT models, we compared the following
 modifications:
@@ -367,9 +402,7 @@ modifications:
 
 ### Results
 
-As shown in Table
-[\[tab:modelresults\]](#tab:modelresults){reference-type="ref"
-reference="tab:modelresults"}, the BERT-CNN model
+As shown in Table [2](#tab:modelresults), the BERT-CNN model
 performed best for predicting both major and minor categories compared
 to the BERT-GRU model and CNN baseline. However, our SVM baseline
 outperformed the neural network models for predicting minor categories.
@@ -378,9 +411,7 @@ language representation models for this text classification task are due
 to limitations in specifying the number of epochs in training. We also
 observed overfitting in our models. For instance, with our CNN model,
 validation loss increased with each additional epoch after a certain
-number of epochs. As shown in Figure
-[\[fig:minornooverfitting\]](#fig:minornooverfitting){reference-type="ref"
-reference="fig:minornooverfitting"}, training accuracy of this model
+number of epochs. As shown in Figure \@ref(fig:major-overfitting), training accuracy of this model
 also increased at the cost of validation accuracy. However, this was not
 the case for deep language representation models classifying texts by
 minor categories. Overall, our results demonstrate that, between the two
@@ -388,13 +419,36 @@ BERT models, the BERT-CNN model demonstrates
 superior performance against bag-of-words approaches and other models
 that utilize neural networks.
 
+::: {#tab:modelresults}
+| Category | Model    | Test Loss | Test Accuracy | Micro-F1 | Macro-F1 |
+|----------|----------|-----------|---------------|----------|----------|
+| _Major_
+|          | MNB      | ---       | 0.553         | 0.553    | 0.398    |
+|          | SVM      | ---       | 0.578         | 0.578    | 0.460    |
+|          | CNN      | 1.177     | 0.589         | 0.589    | 0.466    |
+|          | BERT-GRU | 1.166     | 0.594         | 0.593    | 0.479    |
+|          | BERT-CNN | __1.152__     | __0.591__         | __0.591__    | __0.473__
+| _Minor_        
+|          | MNB      | ---       | 0.385         | 0.385    | 0.154    |
+|          | SVM      | ---       | __0.463__         | __0.463__    | __0.299__    |
+|          | CNN      | 2.136     | 0.454         | 0.454    | 0.273    |
+|          | BERT-GRU | 2.216     | 0.432         | 0.432    | 0.239    |
+|          | BERT-CNN | __2.098__     | 0.448         | 0.448    | 0.260    |
+
+Table: Table 2: Baseline, CNN and BERT models run with base model specifications as detailed in Table [1](#tab:modelspec)
+
+:::
+
+```{r major-overfitting, out.width = '50%', fig.cap = "An illustration of overfitting in our CNN model for classifying manifesto QSs by major policy domain"}
+knitr::include_graphics("figures/CNNMajor_acc_loss.png")
+```
+
 ### CNN and BERT Modifications {#cnn-and-bert-modifications .unnumbered}
 
 Comparing modifications to our CNN models, our results suggest that the
 base model outperforms most alternative model specifications. As
 outlined in Table
-[\[tab:CNNchange\]](#tab:CNNchange){reference-type="ref"
-reference="tab:CNNchange"}, reducing the dropout rate to 0.25 improved
+[3](tab:model-modifications), reducing the dropout rate to 0.25 improved
 the model on some indicators marginally. As expected, the removal of
 uncategorized quasi-sentences yielded improvements in predictions, with
 a significantly higher Macro-F1 score compared to other model
@@ -402,65 +456,45 @@ specifications. Based on these results, future work should focus on how
 model predictions of uncategorized quasi-sentences can be improved,
 given their random nature.
 
-llcccc Category & Model & Test Loss & Test Acc. & Micro-F1 & Macro-F1\
-\[2\]\*Major & MNB & --- & 0.553 & 0.553 & 0.398\
-& SVM & --- & 0.578 & 0.578 & 0.460\
-& CNN & 1.177 & 0.589 & 0.589 & 0.466\
-& BERT-GRU & 1.166 & 0.594 & 0.593 & 0.479\
-& BERT-CNN & **1.152** & **0.591** & **0.591** & **0.473**\
-\[1\]\*Minor & MNB & --- & 0.385 & 0.385 & 0.154\
-& SVM & --- & **0.463** & **0.463** & **0.299**\
-& CNN & 2.136 & 0.454 & 0.454 & 0.273\
-& BERT-GRU & 2.216 & 0.432 & 0.432 & 0.239\
-& BERT-CNN & **2.098** & 0.448 & 0.448 & 0.260\
+::: {#tab:model-modifications}
 
-\
- \
+| Model    | Modification                     | Test Loss | Test Accuracy | Micro-F1 | Macro-F1 | Epochs |
+|----------|----------------------------|-----------|---------------|----------|----------|--------|
+| _CNN_      |                            |           |               |          |          |        |
+|          | Base model                 | 1.177     | __0.589__         | __0.589__    | 0.466    | 100    |
+|          | Lemmatized text            | __1.174__     | 0.585         | 0.585    | 0.46     | 100    |
+|          | Stemmed text               | 1.213     | 0.577         | 0.576    | 0.448    | 100    |
+|          | Dropout = 0.25             | 1.177     | __0.589__         | 0.588    | __0.467__    | 100    |
+|          | Additional layer           | 1.18      | 0.586         | 0.586    | 0.462    | 100    |
+|          | Removing uncategorized QSs | __1.136__     | __0.596__         | __0.595__    | __0.535__    | 100    |
+| _BERT-GRU_ |                            |           |               |          |          |        |
+|          | Base model                 | __1.152__     | __0.594__         | __0.593__    | __0.479__    | 10     |
+|          | Training emb               | 1.163     | 0.592         | 0.592    | __0.479__    | 10     |
+|          | Recurrent runs, training   | 1.234     | 0.582         | 0.581    | 0.459    | 30     |
+|          | Large, uncased             | 1.172     | 0.592         | 0.591    | 0.469    | 10     |
+| _BERT-CNN_ |                            |           |               |          |          |        |
+|          | Base model                 | 1.166     | __0.591__         | __0.591__    | __0.473__    | 10     |
+|          | Training emb               | 1.167     | 0.587         | 0.587    | 0.458    | 10     |
+|          | Recurrent runs, training   | __1.157__     | 0.589         | 0.589    | 0.468    | 30     |
+|          | Large, uncased             | 1.192     | 0.58          | 0.58     | 0.45     | 10     |
 
-llccccc Model & Change & Test Loss & Test Acc. & Micro-F1 & Macro-F1 &
-Epochs\
-\[1\]\*CNN & Base model & 1.177 & **0.589** & **0.589** & 0.466 & 100\
-& Lemmatized text & **1.174** & 0.585 & 0.585 & 0.460 & 100\
-& Stemmed text & 1.213 & 0.577 & 0.576 & 0.448 & 100\
-& Dropout = 0.25 & 1.177 & **0.589** & 0.588 & **0.467** & 100\
-& Additional layer & 1.180 & 0.586 & 0.586 & 0.462 & 100\
-& Removing uncategorized QSs & **1.136** & **0.596** & **0.595** &
-**0.535** & 100\
+Table: Table 3: Comparing results of modifications to CNN and BERT base models for predicting policy domains
 
-\
- \
+::: 
 
 While we observed some improvements with modifications to the CNN model,
 we find that our base BERT models performed best compared
 to other fine-tuned modifications to model architecture. The results of
 our base BERT model and alternative model specifications
-are shown in Table
-[\[tab:BERTchange\]](#tab:BERTchange){reference-type="ref"
-reference="tab:BERTchange"}. Even though it is possible that our base
+are shown above in Table
+[3](tab:model-modifications). Even though it is possible that our base
 BERT model is best for this classification model, our
 results could also indicate the presence of over-fitting or the lack of
 sufficient training available given the low number of epochs.
 
-clccccc & Change & Test Loss & Test Acc. & Micro-F1 & Macro-F1 & Epochs\
-\[2\]\*BERT-GRU & Base model & **1.152** & **0.594** & **0.593** &
-**0.479** & 10\
-& Training emb & 1.163 & 0.592 & 0.592 & **0.479** & 10\
-& Recurrent runs, training & 1.234 & 0.582 & 0.581 & 0.459 & 30\
-& Large, uncased & 1.172 & 0.592 & 0.591 & 0.469 & 10\
-\[1\]\*BERT-CNN & Base model & 1.166 & **0.591** & **0.591** & **0.473**
-& 10\
-& Training emb & 1.167 & 0.587 & 0.587 & 0.458 & 10\
-& Recurrent runs, training & **1.157** & 0.589 & 0.589 & 0.468 & 30\
-& Large, uncased & 1.192 & 0.580 & 0.580 & 0.450 & 10\
-
-\
- \
-
 ## Limitations and Analysis {#discussion}
 
-As shown in Figure
-[\[fig:majoroverfitting\]](#fig:majoroverfitting){reference-type="ref"
-reference="fig:majoroverfitting"}, we observed overfitting with our
+As shown in Figure \@ref(fig:major-overfitting), we observed overfitting with our
 major policy domain classification models. Despite employing changes and
 modifications to our models, including varied dropout rates,
 architecture fine-tuning and different learning rates, we did not find
@@ -470,9 +504,7 @@ improvements on these issues could be resolved by employing transfer
 learning and appending our sample of English-language manifestos with
 other political documents, such as debate transcripts.
 
-In contrast, as shown in Figure
-[\[fig:minornooverfitting\]](#fig:minornooverfitting){reference-type="ref"
-reference="fig:minornooverfitting"}, we observed little over-fitting in
+In contrast, as shown in Figure \@ref(fig:minor-overfitting), we observed little over-fitting in
 our minor policy domain classification models. Our classifier could
 benefit from employing transfer learning and appending our sample of
 manifesto quasi-sentences with other political texts, especially for
@@ -486,28 +518,43 @@ Notwithstanding the lack of training of certain models, this may suggest
 that increasing the model complexity and consequently the computational
 power required may not necessarily lead to increased model performance.
 
-![image](figs/CNNMajor_acc_loss.png){width=".7\\linewidth"}
-
-![image](figs/BERTCNNMinor_acc_loss.png){width=".7\\linewidth"}
-
-![image](figs/prf1-major-bw.png){width=".8\\linewidth"}
+```{r minor-overfitting, out.width = '50%', fig.cap = "Training and validation metrics for the BERT-CNN model for classifying English language manifestos by policy preference"}
+knitr::include_graphics("figures/BERTCNNMinor_acc_loss.png")
+```
 
 Substantially lower Macro-F1 scores across all models point to mixed
 performance in classification by category. As shown in Figure
-[\[fig:prf1major\]](#fig:prf1major){reference-type="ref"
-reference="fig:prf1major"}, we observe high variation in the performance
-of our classifiers between categories. However,, we observe poor
+\@ref(fig:prf1-major), we observe high variation in the performance
+of our classifiers between categories. However, we observe poor
 performance in classifying quasi-sentences that do not belong to one of
-the seven policy domains. For our BERT-CNN model, the easiest categories
+the major policy domains. For our BERT-CNN model, the easiest categories
 to predict were "welfare and quality of life", "economy", and "freedom
 and democracy". The superior performance of predicting the first two
 categories is not particularly surprising, as a substantial number of
 quasi-sentences in our sample of English-language party manifestos are
-attributed to these topics. As shown in Table
-[\[tbl:desc\]](#tbl:desc){reference-type="ref" reference="tbl:desc"},
+attributed to these topics. As shown in Figure \@ref(fig:desc-pd),
 30,750 quasi-sentences are attributed to the "welfare and quality of
 life" category and 24,757 quasi-sentences are attributed to the
 "economy" domain.
+
+```{r prf1-major, out.width = '50%', fig.cap = "Average precision, recall, and Macro-F1 scores by major policy domain across all models"}
+knitr::include_graphics("figures/prf1-major.png")
+```
+
+<aside>
+
+The numbers on the x-axis correspond to their respective policy domains:
+
+- __0__: Not categorized 
+- __1__: External Relations 
+- __2__: Freedom and Democracy 
+- __3__: Political System 
+- __4__: Economy
+- __5__: Welfare and Quality of Life 
+- __6__: Fabric of Society 
+- __7__: Social Groups 
+
+</aside>
 
 In contrast, the relatively superior performance of predicting the
 "freedom and democracy" category is surprising. Out of our total sample
@@ -523,9 +570,8 @@ policy domain from others.
 
 ## Conclusion {#conclusion}
 
-In this paper, we trained two variants of the state-of-the-art
-Bidirectional Encoder Representations from Transformers
-(BERT)---one incorporating a bidirectional GRU model, and
+In this paper, we trained two variants of
+BERT---one incorporating a bidirectional GRU model, and
 another incorporating CNNs. We demonstrate the superior performance of
 deep language representation models combined with neural networks to
 classify political domains and preferences in the Manifesto Project. Our
@@ -566,11 +612,16 @@ application of deep learning models for classifying political texts.
     Democratic and Republican election manifestos from the 2004, 2008
     and 2012 elections in the United States.
 
-[^2]: [manifesto-project.wzb.eu](manifesto-project.wzb.eu)
+[^2]: <https://manifesto-project.wzb.eu/>
 
-[^3]: <https://pytorch.org/>
+[^3]: The classification scheme of 8 policy domains and 58 policy preferences each include a category of quasi-sentences that are not considered part of any meaningful category. 
 
-[^4]: <https://scikit-learn.org/stable/>
+[^4]: <https://pytorch.org/>
 
-[^5]: The micro score calculates metrics globally whilst the macro score
-    calculates metrics for each label and reports the unweighted mean.
+[^5]: <https://scikit-learn.org/stable/>
+
+[^6]: The micro score calculates metrics globally, whilst the macro score
+    calculates metrics for each label and reports the unweighted mean. 
+
+[^7]: This modification is motivated by the results from our base models, which yield lower Macro-F1 scores due to the difficulty of correctly identifying the quasi-sentences that were "not categorized". 
+

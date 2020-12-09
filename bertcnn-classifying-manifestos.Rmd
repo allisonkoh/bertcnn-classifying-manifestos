@@ -58,19 +58,7 @@ of key issues to signal campaign promises and gain favor with
 constituents. Whilst identifying the political positions of political
 actors provides no certainty with regards to whether they act upon their
 policy preferences, it remains essential to understanding their intended
-political actions. This is why policy preferences---or positions on
-specific policy issues expressed in speech or text---have been
-extensively analyzed within the relevant political science literature
-[@abercrombie2019policy; @budge2001mapping; @lowe2011scaling; @volkens2013mapping].
-Methods employed to investigate the policy preferences of political
-actors include analysis of roll call voting, position extraction from
-elite studies or regular surveys, expert surveys and hand-coded analysis
-and computerized text analysis [@debus2009estimating]. Studies that
-utilize political manifestos, electoral speeches, and debate motions
-often rely on the availability of machine-readable documents that are
-labeled by policy domain or policy preference.
-
-Quantitative methods, especially in the field of natural language
+political actions. Quantitative methods, especially in the field of natural language
 processing, have enabled the development of more scalable methods for
 predicting policy preferences. These advancements have enabled political
 scientists to analyze political texts and estimate their positions over
@@ -101,10 +89,7 @@ establish that our proposed method outperforms other approaches commonly
 used in natural language processing research when it comes to choosing
 the correct policy domain and policy preference. We identify differences
 in performance across policy domains, paving the way for future work on
-improving deep learning models for classifying political texts. To the
-best of our knowledge, we offer the most comprehensive application of
-deep language representation models incorporated with neural networks
-for document classification of political manifesto statements.
+improving deep learning models for classifying political texts.
 
 ## Related Work {#related_work}
 
@@ -199,7 +184,7 @@ Each of domain comprises of minor categories, also known as [policy preferences]
 Our final subset of all English-language manifestos comprises of 99,681
 quasi-sentences. Figures \@ref(fig:desc-pd) and \@ref(fig:desc-country) illustrate the distribution of English-language
 manifestos across countries and policy domains. To ensure that the ratio
-between policy domains remains consistent across policy domains in
+between policy domains remains consistent across all categories in
 running our models, we applied a 70/15/15 split between training,
 validation, and test sets separately for all policy domains (major categories) and policy preferences (minor categories). 
 
@@ -288,8 +273,8 @@ Table: Table 1: Model specifications of neural networks and deep language repres
 
 :::
 
-```{r tt, out.width = '50%', fig.cap = "Training time for neural networks and deep language representation models for classifying political texts by *major* and *minor* policy domain"}
-knitr::include_graphics("figures/tt.png")
+```{r tt, out.width = '100%', fig.cap = "Training time for neural networks and deep language representation models for classifying political texts by *major* and *minor* policy domain"}
+knitr::include_graphics("figures/training_time.png")
 ```
 
 
@@ -440,7 +425,7 @@ Table: Table 2: Baseline, CNN and BERT models run with base model specifications
 :::
 
 ```{r major-overfitting, out.width = '50%', fig.cap = "An illustration of overfitting in our CNN model for classifying manifesto QSs by major policy domain"}
-knitr::include_graphics("figures/CNNMajor_acc_loss.png")
+knitr::include_graphics("figures/cnnmaj_acc_loss.png")
 ```
 
 ### CNN and BERT Modifications {#cnn-and-bert-modifications .unnumbered}
@@ -519,7 +504,7 @@ that increasing the model complexity and consequently the computational
 power required may not necessarily lead to increased model performance.
 
 ```{r minor-overfitting, out.width = '50%', fig.cap = "Training and validation metrics for the BERT-CNN model for classifying English language manifestos by policy preference"}
-knitr::include_graphics("figures/BERTCNNMinor_acc_loss.png")
+knitr::include_graphics("figures/bertcnnmin_acc_loss.png")
 ```
 
 Substantially lower Macro-F1 scores across all models point to mixed
@@ -536,7 +521,7 @@ attributed to these topics. As shown in Figure \@ref(fig:desc-pd),
 30,750 quasi-sentences are attributed to the "welfare and quality of
 life" category and 24,757 quasi-sentences are attributed to the
 "economy" domain.
-
+ 
 ```{r prf1-major, out.width = '50%', fig.cap = "Average precision, recall, and Macro-F1 scores by major policy domain across all models"}
 knitr::include_graphics("figures/prf1-major.png")
 ```

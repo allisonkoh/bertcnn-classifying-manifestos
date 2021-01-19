@@ -28,6 +28,10 @@ library(reticulate) # For rendering Python code
 ggplot2::theme_set(theme_minimal())
 ```
 
+```{r head-img, echo = FALSE, layout = "l-screen-inset"}
+knitr::include_graphics("figures/prf1-major.png")
+```
+
  {#abstract}
 ============
 
@@ -526,20 +530,20 @@ life" category and 24,757 quasi-sentences are attributed to the
 knitr::include_graphics("figures/prf1-major.png")
 ```
 
-<aside>
+<!-- <aside> -->
 
-The numbers on the x-axis correspond to their respective policy domains:
+<!-- The numbers on the x-axis correspond to their respective policy domains: -->
 
-- __0__: Not categorized 
-- __1__: External Relations 
-- __2__: Freedom and Democracy 
-- __3__: Political System 
-- __4__: Economy
-- __5__: Welfare and Quality of Life 
-- __6__: Fabric of Society 
-- __7__: Social Groups 
+<!-- - __0__: Not categorized  -->
+<!-- - __1__: External Relations  -->
+<!-- - __2__: Freedom and Democracy  -->
+<!-- - __3__: Political System  -->
+<!-- - __4__: Economy -->
+<!-- - __5__: Welfare and Quality of Life  -->
+<!-- - __6__: Fabric of Society  -->
+<!-- - __7__: Social Groups  -->
 
-</aside>
+<!-- </aside> -->
 
 In contrast, the relatively superior performance of predicting the
 "freedom and democracy" category is surprising. Out of our total sample

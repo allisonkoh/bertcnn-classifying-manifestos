@@ -106,13 +106,13 @@ policy preferences associated with the topic. Over the past couple of
 years, several studies have addressed the gap in *opinion-topic
 identification* by classifying text data from political speeches,
 manifestos, and other documents by topic before predicting policy
-preference. Perhaps most relevant to our research is the paper by , in
+preference. Perhaps most relevant to our research is the paper by @zirn2016classifying, in
 which the authors trained and validated an approach to classifying
 manifestos from the United States into seven policy domains that
 involved binary classifiers predicting whether sentences that are
 adjacent to one another belong to the same topic[^1]. Their proposed
 approach of optimizing predictions using a Markov Logic framework
-yielded an average micro-F1 score of .749. introduced a multi-lingual
+yielded an average micro-F1 score of .749. @glavavs2017cross introduced a multi-lingual
 classifier for automatically labeling texts by policy domain. For
 classification of 20,196 English-language manifestos by policy domain,
 their CNN models yielded an average micro-F1 score of .59.

@@ -403,7 +403,7 @@ validation loss increased with each additional epoch after a certain
 number of epochs. As shown in Figure \@ref(fig:major-overfitting), training accuracy of this model
 also increased at the cost of validation accuracy. However, this was not
 the case for deep language representation models classifying texts by
-minor categories. Overall, our results demonstrate that, between the two
+minor categories. Overall, our results show that, between the two
 BERT models, the BERT-CNN model demonstrates
 superior performance against bag-of-words approaches and other models
 that utilize neural networks.
@@ -475,7 +475,7 @@ While we observed some improvements with modifications to the CNN model,
 we find that our base BERT models performed best compared
 to other fine-tuned modifications to model architecture. The results of
 our base BERT model and alternative model specifications
-are shown above in Table
+are shown in Table
 [3](tab:model-modifications). Even though it is possible that our base
 BERT model is best for this classification model, our
 results could also indicate the presence of over-fitting or the lack of
@@ -550,8 +550,7 @@ In contrast, the relatively superior performance of predicting the
 of $n_{\mathrm{sentences}}=99,681$, only 4,700 documents are attributed
 to the "freedom and democracy" category. Intuitively, the performance of
 our classifier with this underrepresented policy domain could be
-attributed to a variety of possible explanations. One possible
-explanation is the presence of distinct features such as topic-unique
+attributed to a variety of possible explanations. One is the presence of distinct features such as topic-unique
 vocabulary that do not exist in other categories. Future work on
 classification of political documents that fall under this category
 would benefit from looking into features that might distinguish this
@@ -571,8 +570,7 @@ texts. As far as we know, this is the most comprehensive application of
 deep language representation models and neural networks for classifying
 statements from political manifestos.
 
-We find that using BERT in conjunction with convolutional
-neural networks yields the best predictions for classifying English
+We find that using BERT in conjunction with CNNs yields the best predictions for classifying English
 language statements parsed from party manifestos. However, our proposed
 BERT-CNN model requires further fine-tuning to be
 effective in providing acceptable predictions to improve on less
